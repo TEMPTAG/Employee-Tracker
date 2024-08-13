@@ -1,3 +1,4 @@
+-- Inserting departments
 INSERT INTO department (name)
 VALUES  ('Executive Management'),
         ('Sales'), 
@@ -6,6 +7,7 @@ VALUES  ('Executive Management'),
         ('Parts'), 
         ('Customer Service');
 
+-- Inserting roles
 INSERT INTO role (title, salary, department_id)
 VALUES  ('General Manager', 400000, 1),
         ('Sales Manager', 150000, 2), 
@@ -17,10 +19,11 @@ VALUES  ('General Manager', 400000, 1),
         ('Parts Manager', 90000, 5), 
         ('Parts Specialist', 60000, 5), 
         ('Customer Service Manager', 110000, 6), 
-        ('Customer Service Representative', 60000, 6);
+        ('CS Representative', 60000, 6);
 
+-- Inserting employees
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES  ('Jonathan', 'Pierce', 1, NULL)
+VALUES  ('Jonathan', 'Pierce', 1, NULL),
         ('David', 'Thompson', 2, 1), 
         ('Emily', 'Rodriguez', 3, 2), 
         ('Michael', 'Carter', 4, 1), 
