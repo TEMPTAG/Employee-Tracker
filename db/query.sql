@@ -22,6 +22,15 @@ LEFT JOIN employee m ON e.manager_id = m.id;
 INSERT INTO department (name)
 VALUES ('$1');
 
+-- WHEN I choose to add a role
+-- THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
+-- Get Department names (in alphabetical order) and ids:
+SELECT * FROM department ORDER BY name ASC
+-- Insert a new Role into the Role table:
+INSERT INTO role (title, salary, department_id)
+VALUES ('$1', $2, $3);
+
+
 --DELETING A DEPARTMENT:
 -- Query to delete a Department by id:
 DELETE FROM department WHERE id = <department_id>;

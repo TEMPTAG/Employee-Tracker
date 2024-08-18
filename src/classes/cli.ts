@@ -189,10 +189,57 @@ class Cli {
     // WHEN I choose to add a role
     // THEN I am prompted to enter the name, salary, and department for the role and that role is added to the database
     addRole(): void {
-        console.log('Add a Role');
-        // Placeholder for additional logic or prompts
-        this.mainMenu();
+        pool.query('SELECT * FROM department ORDER BY name ASC', (err, res) => {
+            if (err) {
+                console.error('Error getting Departments data.', err);
+                this.mainMenu();
+            } else {
+                const departments = res.rows.map((row) => ({
+                name: row.name,
+                value: row.id,
+            }));
+
+            inquirer
+                .prompt([
+                    {
+                        type: 'input',
+                        name: 'title',
+                        message: `Enter the Role's Title:`,
+                    },
+                    {
+                        type: 'input',
+                        name: 'salary',
+                        message: `Enter the Role's Salary:`,
+                    },
+                    {
+                        type: 'list',
+                        name: 'departmentId',
+                        message: `Assign the Role to a Department:`,
+                        choices: departments,
+                    },
+                ])
+                .then((answers) => {
+                    const { title, salary, departmentId } = answers;
+                    pool.query(
+                        'INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)',
+                        [title, salary, departmentId],
+                        (err) => {
+                            if (err) {
+                                console.error('Error Adding New Role.', err);
+                                this.mainMenu();
+                            } else {
+                                console.log();
+                                console.log(`New Role '${title}' Added Successfully.`);
+                                console.log();
+                                this.mainMenu();
+                            }
+                        }
+                    );
+                });
+            }
+        });
     }
+
 
     // WHEN I choose to add an employee
     // THEN I am prompted to enter the employee's first name, last name, role, and manager, and that employee is added to the database
