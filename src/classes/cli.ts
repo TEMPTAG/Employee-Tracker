@@ -1,10 +1,10 @@
 import inquirer from 'inquirer';
+import { QueryResult } from 'pg';
+import { pool } from '../connection.js';
 
 // CLI:
 class Cli {
-    exit: boolean = false;
-
-    startCli(): void {
+    mainMenu(): void {
         inquirer
             .prompt([
                 {
@@ -37,25 +37,48 @@ class Cli {
                     this.manageEmployees();
                 } else if (answers.MainMenu === 'Exit') {
                     console.log('Goodbye!');
-                    this.exit = true;
-                    return;
-                }
-                if (!this.exit) {
-                    this.startCli();
+                    process.exit();
                 }
             });
     }
 
     viewAllDepartments(): void {
-        console.log('Viewing all departments...');
+        pool.query('SELECT * FROM department', (err: Error, res: QueryResult) => {
+            if (err) {
+                console.error('Error executing query.', err);
+                this.mainMenu();
+            } else {
+                console.log('Departments:');
+                console.table(res.rows);
+                this.mainMenu();
+            }
+        });
     }
 
     viewAllRoles(): void {
-        console.log('Viewing all roles...');
+        pool.query('SELECT * FROM role', (err: Error, res: QueryResult) => {
+            if (err) {
+                console.error('Error executing query.', err);
+                this.mainMenu();
+            } else {
+                console.log('Roles:');
+                console.table(res.rows);
+                this.mainMenu();
+            }
+        });
     }
 
     viewAllEmployees(): void {
-        console.log('Viewing all employees...');
+        pool.query('SELECT * FROM employee', (err: Error, res: QueryResult) => {
+            if (err) {
+                console.error('Error executing query.', err);
+                this.mainMenu();
+            } else {
+                console.log('Employees:');
+                console.table(res.rows);
+                this.mainMenu();
+            }
+        });
     }
 
     manageDepartments(): void {
