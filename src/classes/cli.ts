@@ -159,9 +159,31 @@ class Cli {
     // WHEN I choose to add a department
     // THEN I am prompted to enter the name of the department and that department is added to the database
     addDepartment(): void {
-        console.log('Add a Department');
-        // Placeholder for additional logic or prompts
-        this.mainMenu();
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    name: 'newDepartment',
+                    message: 'Enter the New Department Name:',
+                },
+            ])
+            .then((answers) => {
+                pool.query(
+                    'INSERT INTO department (name) VALUES ($1)',
+                    [answers.newDepartment],
+                    (err) => {
+                        if (err) {
+                            console.error('Error Adding New Department.', err);
+                            this.mainMenu();
+                        } else {
+                            console.log();
+                            console.log(`New Department '${answers.newDepartment}' Added Successfully.`);
+                            console.log();
+                            this.mainMenu();
+                        }
+                    }
+                );
+            });
     }
 
     // WHEN I choose to add a role

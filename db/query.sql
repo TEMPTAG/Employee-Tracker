@@ -1,13 +1,13 @@
 -- WHEN I choose to view all departments
 -- THEN I am presented with a formatted (alphabetical order by department) table showing department names and department ids
 SELECT * FROM department 
-ORDER BY name ASC
+ORDER BY name ASC;
 
 -- WHEN I choose to view all roles
 -- THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
 SELECT r.id, r.title, r.salary, d.name AS department
 FROM role r
-JOIN department d ON r.department_id = d.id
+JOIN department d ON r.department_id = d.id;
 
 -- WHEN I choose to view all employees
 -- THEN I am presented with a formatted table showing employee data, including employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
@@ -15,7 +15,12 @@ SELECT e.id, e.first_name, e.last_name, r.title AS job_title, d.name AS departme
 FROM employee e
 JOIN role r ON e.role_id = r.id
 JOIN department d ON r.department_id = d.id
-LEFT JOIN employee m ON e.manager_id = m.id
+LEFT JOIN employee m ON e.manager_id = m.id;
+
+-- WHEN I choose to add a department
+-- THEN I am prompted to enter the name of the department and that department is added to the database
+INSERT INTO department (name)
+VALUES ('$1');
 
 --DELETING A DEPARTMENT:
 -- Query to delete a Department by id:
