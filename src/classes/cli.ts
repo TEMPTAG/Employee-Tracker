@@ -22,6 +22,7 @@ class Cli {
                         'Add a Role', 
                         'Add an Employee',
                         'Update an Employee Role',
+                        `Update an Employee's Manager`,
                         'Exit'
                     ],
                 },
@@ -48,6 +49,9 @@ class Cli {
                         break;
                     case 'Update an Employee Role':
                         this.updateEmployeeRole();
+                        break;
+                    case `Update an Employee's Manager`:
+                        this.updateEmployeeManager();
                         break;
                     case 'Exit':
                         console.log('Goodbye!');
@@ -246,7 +250,7 @@ class Cli {
                 console.error('Error getting Roles data.', err);
                 this.mainMenu();
             } else {
-                pool.query(`SELECT e.id, CONCAT(e.first_name, ' ', e.last_name, ' - ' , r.title) AS name 
+                pool.query(`SELECT e.id, CONCAT(r.title, ' - ', e.first_name, ' ', e.last_name) AS name 
                     FROM employee e
                     JOIN role r ON e.role_id = r.id
                     WHERE r.title ILIKE '%Manager%'
@@ -318,14 +322,136 @@ class Cli {
     // WHEN I choose to update an employee role
     // THEN I am prompted to select an employee to update and their new role and this information is updated in the database
     updateEmployeeRole(): void {
-        console.log('Update an Employee Role');
-        // Placeholder for additional logic or prompts
-        this.mainMenu();
-    }
+        pool.query('SELECT id, CONCAT(first_name, \' \', last_name) AS name FROM employee ORDER BY name ASC', (err, empRes) => {
+            if (err) {
+                console.error('Error getting Employees data.', err);
+                this.mainMenu();
+            } else {
+                const employees = empRes.rows.map((row) => ({
+                    name: row.name,
+                    value: row.id,
+                }));
+                pool.query('SELECT id, title FROM role ORDER BY title ASC', (err, roleRes) => {
+                    if (err) {
+                        console.error('Error getting Roles data.', err);
+                        this.mainMenu();
+                    } else {
+                        const roles = roleRes.rows.map((row) => ({
+                            name: row.title,
+                            value: row.id,
+                        }));
+                        inquirer
+                            .prompt([
+                                {
+                                    type: 'list',
+                                    name: 'employeeId',
+                                    message: 'Select an Employee to Update:',
+                                    choices: employees,
+                                },
+                                {
+                                    type: 'list',
+                                    name: 'roleId',
+                                    message: `Select the Employee's New Role:`,
+                                    choices: roles,
+                                },
+                            ])
+                            .then((answers) => {
+                                const { employeeId, roleId } = answers;
+                                pool.query(
+                                    'UPDATE employee SET role_id = $1 WHERE id = $2',
+                                    [roleId, employeeId],
+                                    (err) => {
+                                        if (err) {
+                                            console.error('Error Updating Employee Role.', err);
+                                        } else {
+                                            console.log();
+                                            console.log('Employee Role Updated Successfully.');
+                                            console.log();
+                                        }
+                                        this.mainMenu();
+                                    }
+                                );
+                            });
+                        }
+                    });
+                }
+            });
+        }
 
     // Bonus:
     // Try to add some additional functionality to your application, such as the ability to do the following:
     // Update employee managers:
+    updateEmployeeManager(): void {
+        pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY name ASC`, (err, empRes) => {
+            if (err) {
+                console.error('Error getting Employees data.', err);
+                this.mainMenu();
+            } else {
+                const employees = empRes.rows.map((row) => ({
+                    name: row.name,
+                    value: row.id,
+                }));
+                inquirer
+                    .prompt([
+                        {
+                            type: 'list',
+                            name: 'employeeId',
+                            message: 'Select the Employee to Update:',
+                            choices: employees,
+                        }
+                    ])
+                    
+                    .then((answers) => {
+                        const { employeeId } = answers;
+                        pool.query(`SELECT e.id, CONCAT(r.title, ' - ', e.first_name, ' ', e.last_name) AS name 
+                            FROM employee e
+                            JOIN role r ON e.role_id = r.id
+                            WHERE r.title ILIKE '%Manager%'
+                            ORDER BY name ASC`, 
+                            (err, manRes) => {
+                            if (err) {
+                                console.error('Error getting Employees data.', err);
+                                this.mainMenu();
+                            } else {
+                                const managers = manRes.rows.map((row) => ({
+                                    name: row.name,
+                                    value: row.id,
+                                }));
+                                managers.unshift({ name: 'None', value: null });
+
+                                inquirer
+                                    .prompt([
+                                        {
+                                            type: 'list',
+                                            name: 'managerId',
+                                            message: `Select the Employee's New Manager:`,
+                                            choices: managers,
+                                        },
+                                    ])
+                                    .then((answers) => {
+                                        const { managerId } = answers;
+                                        pool.query(
+                                            'UPDATE employee SET manager_id = $1 WHERE id = $2',
+                                            [managerId, employeeId],
+                                            (err) => {
+                                                if (err) {
+                                                    console.error('Error Updating Employee Manager.', err);
+                                                } else {
+                                                    console.log();
+                                                    console.log('Employee Manager Updated Successfully.');
+                                                    console.log();
+                                                }
+                                                this.mainMenu();
+                                            }
+                                        );
+                                    });
+                            }
+                        }
+                    );
+            });
+        }
+        });
+    }
 
     // View employees by manager:
 

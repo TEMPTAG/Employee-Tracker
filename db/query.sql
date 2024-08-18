@@ -34,8 +34,8 @@ VALUES ('$1', $2, $3);
 -- THEN I am prompted to enter the employee’s first name, last name, role, and manager and that employee is added to the database
 -- Get Role titles (in alphabetical order) and ids:
 SELECT id, title FROM role ORDER BY title ASC
--- Get Employee names - concatenate first_name and last_name, dash title (so they are easy to identify in the managers list):
-SELECT e.id, CONCAT(e.first_name, ' ', e.last_name, ' - ' , r.title) AS name 
+-- Get Employee names - title (so they are easy to identify in the managers list, dash concatenate first_name and last_name:
+SELECT e.id, CONCAT(r.title, ' - ', e.first_name, ' ', e.last_name) AS name 
 FROM employee e
 JOIN role r ON e.role_id = r.id
 -- Only get Employees that have Manager in their title:
@@ -43,6 +43,18 @@ WHERE r.title ILIKE '%Manager%'
 -- Put the Manager list in alphabetical order by name:
 ORDER BY name ASC
 
+-- WHEN I choose to update an employee role
+-- THEN I am prompted to select an employee to update and their new role and this information is updated in the database
+-- Get Employees by id, concat first_name and last_name, and put in alphabetical order by name:
+SELECT id, CONCAT(first_name, ' ', last_name) AS name
+FROM employee
+ORDER BY name ASC
+-- Get Role titles (in alphabetical order) and ids:
+SELECT id, title FROM role ORDER BY title ASC
+-- Update the Employee's role:
+UPDATE employee
+SET role_id = $2
+WHERE id = $1;
 
 --DELETING A DEPARTMENT:
 -- Query to delete a Department by id:
@@ -55,6 +67,26 @@ SELECT * FROM role WHERE department_id = <department_id>;
 SELECT e.* FROM employee e
 JOIN role r ON e.role_id = r.id
 WHERE r.department_id = <department_id>;
+
+
+-- Update employee managers:
+-- Get Employees by id, concat first_name and last_name, and put in alphabetical order by name:
+SELECT id, CONCAT(first_name, ' ', last_name) AS name 
+FROM employee 
+ORDER BY name ASC
+
+-- then: Get Managers by id, concat first_name and last_name, and put in alphabetical order by name:
+SELECT e.id, CONCAT(r.title, ' - ', e.first_name, ' ', e.last_name) AS name
+FROM employee e
+JOIN role r ON e.role_id = r.id
+WHERE r.title ILIKE '%Manager%'
+ORDER BY name ASC
+
+-- Update the Employee's manager:
+UPDATE employee 
+SET manager_id = $1 
+WHERE id = $2
+
 
 
 -- Orphaned Roles after deleting a Department:
