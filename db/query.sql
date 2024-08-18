@@ -30,6 +30,19 @@ SELECT * FROM department ORDER BY name ASC
 INSERT INTO role (title, salary, department_id)
 VALUES ('$1', $2, $3);
 
+-- WHEN I choose to add an employee
+-- THEN I am prompted to enter the employee’s first name, last name, role, and manager and that employee is added to the database
+-- Get Role titles (in alphabetical order) and ids:
+SELECT id, title FROM role ORDER BY title ASC
+-- Get Employee names - concatenate first_name and last_name, dash title (so they are easy to identify in the managers list):
+SELECT e.id, CONCAT(e.first_name, ' ', e.last_name, ' - ' , r.title) AS name 
+FROM employee e
+JOIN role r ON e.role_id = r.id
+-- Only get Employees that have Manager in their title:
+WHERE r.title ILIKE '%Manager%'
+-- Put the Manager list in alphabetical order by name:
+ORDER BY name ASC
+
 
 --DELETING A DEPARTMENT:
 -- Query to delete a Department by id:

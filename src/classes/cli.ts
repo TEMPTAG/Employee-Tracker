@@ -63,7 +63,6 @@ class Cli {
         pool.query('SELECT * FROM department ORDER BY name ASC', (err, res) => {
             if (err) {
                 console.error('Error executing query.', err);
-                this.mainMenu();
             } else {
                 console.log();
                 console.log('All Departments:');
@@ -75,8 +74,8 @@ class Cli {
                 });
                 console.log(table.toString());
                 console.log();
-                this.mainMenu();
             }
+            this.mainMenu();
         });
     }
 
@@ -95,7 +94,6 @@ class Cli {
             (err, res) => {
             if (err) {
                 console.error('Error executing query.', err);
-                this.mainMenu();
             } else {
                 console.log();
                 console.log('All Roles:');
@@ -107,8 +105,8 @@ class Cli {
                 });
                 console.log(table.toString());
                 console.log();
-                this.mainMenu();
             }
+            this.mainMenu();
         });
     }
 
@@ -131,7 +129,6 @@ class Cli {
             (err, res) => {
             if (err) {
                 console.error('Error executing query.', err);
-                this.mainMenu();
             } else {
                 console.log();
                 console.log('All Employees:');
@@ -151,8 +148,8 @@ class Cli {
                 });
                 console.log(table.toString());
                 console.log();
-                this.mainMenu();
             }
+            this.mainMenu();
         });
     }
 
@@ -174,13 +171,12 @@ class Cli {
                     (err) => {
                         if (err) {
                             console.error('Error Adding New Department.', err);
-                            this.mainMenu();
                         } else {
                             console.log();
                             console.log(`New Department '${answers.newDepartment}' Added Successfully.`);
                             console.log();
-                            this.mainMenu();
                         }
+                        this.mainMenu();
                     }
                 );
             });
@@ -226,13 +222,12 @@ class Cli {
                         (err) => {
                             if (err) {
                                 console.error('Error Adding New Role.', err);
-                                this.mainMenu();
                             } else {
                                 console.log();
                                 console.log(`New Role '${title}' Added Successfully.`);
                                 console.log();
-                                this.mainMenu();
                             }
+                            this.mainMenu();
                         }
                     );
                 });
@@ -244,9 +239,80 @@ class Cli {
     // WHEN I choose to add an employee
     // THEN I am prompted to enter the employee's first name, last name, role, and manager, and that employee is added to the database
     addEmployee(): void {
-        console.log('Add an Employee');
-        // Placeholder for additional logic or prompts
-        this.mainMenu();
+        pool.query(`SELECT id, title FROM role
+            ORDER BY title ASC`, 
+            (err, roleRes) => {
+            if (err) {
+                console.error('Error getting Roles data.', err);
+                this.mainMenu();
+            } else {
+                pool.query(`SELECT e.id, CONCAT(e.first_name, ' ', e.last_name, ' - ' , r.title) AS name 
+                    FROM employee e
+                    JOIN role r ON e.role_id = r.id
+                    WHERE r.title ILIKE '%Manager%'
+                    ORDER BY name ASC`, 
+                    (err, manRes) => {
+                    if (err) {
+                        console.error('Error getting Manager data.', err);
+                        this.mainMenu();
+                    } else {
+                        const roles = roleRes.rows.map((row) => ({
+                            name: row.title,
+                            value: row.id,
+                        }));
+                        const managers = manRes.rows.map((row) => ({
+                            name: row.name,
+                            value: row.id,
+                        }));
+                        managers.unshift({ name: 'None', value: null });
+                        
+                        inquirer
+                        .prompt([
+                            {
+                                type: 'input',
+                                name: 'firstName',
+                                message: `Enter the Employee's First Name:`,
+                            },
+                            {
+                                type: 'input',
+                                name: 'lastName',
+                                message: `Enter the Employee's Last Name:`,
+                            },
+                            {
+                                type: 'list',
+                                name: 'roleId',
+                                message: `Assign the Employee a Role:`,
+                                choices: roles,
+                            },
+                            {
+                                type: 'list',
+                                name: 'managerId',
+                                message: `Assign the Employee a Manager:`,
+                                choices: managers,
+                            },
+                        ])
+                        .then((answers) => {
+                            const { firstName, lastName, roleId, managerId } = answers;
+                            pool.query(
+                                'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)',
+                                [firstName, lastName, roleId, managerId],
+                                (err) => {
+                                    if (err) {
+                                        console.error('Error Adding New Employee.', err);
+                                    } else {
+                                        console.log();
+                                        console.log(`New Employee '${firstName} ${lastName}' Added Successfully.`);
+                                        console.log();
+                                    }
+                                    this.mainMenu();
+                                }
+                            );
+                        });
+                    }
+                }
+            );
+        }
+    });
     }
 
     // WHEN I choose to update an employee role
@@ -259,7 +325,6 @@ class Cli {
 
     // Bonus:
     // Try to add some additional functionality to your application, such as the ability to do the following:
-
     // Update employee managers:
 
     // View employees by manager:
