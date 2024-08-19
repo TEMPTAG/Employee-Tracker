@@ -121,7 +121,7 @@ npm start
 
 ## Contributing
 
-![GitHub contributors](https://img.shields.io/github/contributors/TEMPTAG/5Day-WeatherReport?color=green) ![GitHub commit activity](https://img.shields.io/github/commit-activity/t/TEMPTAG/5Day-WeatherReport)
+![GitHub contributors](https://img.shields.io/github/contributors/TEMPTAG/Employee-Tracker?color=green) ![GitHub commit activity](https://img.shields.io/github/commit-activity/t/TEMPTAG/Employee-Tracker)
 
 OH. MY. GOODNESS. Collaborations are amazing. Share ideas, code, etc. with others is the best way to share knowledge, mutual enthusiasms, and a lot of times we make cool friends along the way. I welcome contributions in many ways, shapes, and forms:
 
