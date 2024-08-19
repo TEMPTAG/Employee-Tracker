@@ -23,6 +23,7 @@ class Cli {
                         'Add an Employee',
                         'Update an Employee Role',
                         `Update an Employee's Manager`,
+                        'Delete a Department',
                         'Exit'
                     ],
                 },
@@ -52,6 +53,9 @@ class Cli {
                         break;
                     case `Update an Employee's Manager`:
                         this.updateEmployeeManager();
+                        break;
+                    case 'Delete a Department':
+                        this.deleteDepartment();
                         break;
                     case 'Exit':
                         console.log('Goodbye!');
@@ -400,7 +404,7 @@ class Cli {
                             choices: employees,
                         }
                     ])
-                    
+
                     .then((answers) => {
                         const { employeeId } = answers;
                         pool.query(`SELECT e.id, CONCAT(r.title, ' - ', e.first_name, ' ', e.last_name) AS name 
@@ -458,6 +462,55 @@ class Cli {
     // View employees by department:
 
     // Delete departments, roles, and employees:
+    deleteDepartment(): void {
+        pool.query(`SELECT * FROM department ORDER BY name ASC`, (err, res) => {
+            if (err) {
+                console.error('Error getting Departments data.', err);
+                this.mainMenu();
+            } else {
+                const departments = res.rows.map((row) => ({
+                    name: row.name,
+                    value: row.id,
+                }));
+
+                inquirer
+                    .prompt([
+                        {
+                            type: 'list',
+                            name: 'departmentId',
+                            message: 'Select the Department to Delete:',
+                            choices: departments,
+                        },
+                        {
+                            type: 'confirm',
+                            name: 'confirm',
+                            message: 'Deleting a Department will delete all Roles and Employees related to that Department. Would you like to continue?',
+                            default: false,
+                        },
+                    ])
+                    .then((answers) => {
+                        const { departmentId, confirm } = answers;
+                        if (confirm) {
+                            pool.query(`DELETE FROM department WHERE id = $1`, 
+                                [departmentId], (err) => {
+                                if (err) {
+                                    console.error('Error Deleting Department.', err);
+                                } else {
+                                    console.log();
+                                    console.log('Department Deleted Successfully.');
+                                    console.log();
+                                }
+                            this.mainMenu();
+                        });
+                    } else {
+                        console.log();
+                        console.log('Delete Department Cancelled.');
+                        console.log();
+                        this.mainMenu();}
+                    });
+            }
+        });
+    }
 
     // View the total utilized budget of a department—in other words, the combined salaries of all employees in that department:
 }
