@@ -24,6 +24,8 @@ class Cli {
                         'Update an Employee Role',
                         `Update an Employee's Manager`,
                         'Delete a Department',
+                        'Delete a Role',
+                        'Delete an Employee',
                         'Exit'
                     ],
                 },
@@ -56,6 +58,12 @@ class Cli {
                         break;
                     case 'Delete a Department':
                         this.deleteDepartment();
+                        break;
+                    case 'Delete a Role':
+                        this.deleteRole();
+                        break;
+                    case 'Delete an Employee':
+                        this.deleteEmployee();
                         break;
                     case 'Exit':
                         console.log('Goodbye!');
@@ -507,6 +515,106 @@ class Cli {
                         console.log('Delete Department Cancelled.');
                         console.log();
                         this.mainMenu();}
+                    });
+            }
+        });
+    }
+
+    deleteRole(): void {
+        pool.query(`SELECT * FROM role ORDER BY title ASC`, (err, res) => {
+            if (err) {
+                console.error('Error getting Roles data.', err);
+                this.mainMenu();
+            } else {
+                const roles = res.rows.map((row) => ({
+                    name: row.title,
+                    value: row.id,
+                }));
+    
+                inquirer
+                    .prompt([
+                        {
+                            type: 'list',
+                            name: 'roleId',
+                            message: 'Select the Role to Delete:',
+                            choices: roles,
+                        },
+                        {
+                            type: 'confirm',
+                            name: 'confirmDelete',
+                            message: 'Deleting a Role will delete all Employees related to that Role. Would you like to continue?',
+                            default: false,
+                        },
+                    ])
+                    .then((answers) => {
+                        const { roleId, confirmDelete } = answers;
+    
+                        if (confirmDelete) {
+                            pool.query(`DELETE FROM role WHERE id = $1`, 
+                                [roleId], (err) => {
+                                if (err) {
+                                    console.error('Error Deleting Role.', err);
+                                } else {
+                                    console.log();
+                                    console.log('Role Deleted Successfully.');
+                                    console.log();
+                                }
+                                this.mainMenu();
+                            });
+                        } else {
+                            console.log('Role delete canceled.');
+                            this.mainMenu();
+                        }
+                    });
+            }
+        });
+    }
+
+    deleteEmployee(): void {
+        pool.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY name ASC`, (err, res) => {
+            if (err) {
+                console.error('Error getting Employees data.', err);
+                this.mainMenu();
+            } else {
+                const employees = res.rows.map((row) => ({
+                    name: row.name,
+                    value: row.id,
+                }));
+    
+                inquirer
+                    .prompt([
+                        {
+                            type: 'list',
+                            name: 'employeeId',
+                            message: 'Select the Employee to Delete:',
+                            choices: employees,
+                        },
+                        {
+                            type: 'confirm',
+                            name: 'confirmDelete',
+                            message: 'Deleting an Employee cannot be undone.  Would you like to continue?',
+                            default: false,
+                        },
+                    ])
+                    .then((answers) => {
+                        const { employeeId, confirmDelete } = answers;
+    
+                        if (confirmDelete) {
+                            pool.query(`DELETE FROM employee WHERE id = $1`, 
+                                [employeeId], (err) => {
+                                if (err) {
+                                    console.error('Error Deleting Employee.', err);
+                                } else {
+                                    console.log();
+                                    console.log('Employee Deleted Successfully.');
+                                    console.log();
+                                }
+                                this.mainMenu();
+                            });
+                        } else {
+                            console.log('Employee delete canceled.');
+                            this.mainMenu();
+                        }
                     });
             }
         });

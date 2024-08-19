@@ -93,3 +93,11 @@ WHERE id = $2
 --DELETING A DEPARTMENT:
 -- Query to delete a Department by id:
 DELETE FROM department WHERE id = $1;
+
+-- DELETING A ROLE:
+-- Query to delete a Role by id:
+DELETE FROM role WHERE id = $1;
+
+-- DELETING AN EMPLOYEE:
+-- Query to delete an Employee by id:
+DELETE FROM employee WHERE id = $1;
