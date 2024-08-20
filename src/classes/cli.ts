@@ -24,6 +24,7 @@ class Cli {
                         'Update an Employee Role',
                         `Update an Employee's Manager`,
                         'View Employees by Manager',
+                        'View Employees by Department',
                         'Delete a Department',
                         'Delete a Role',
                         'Delete an Employee',
@@ -59,6 +60,9 @@ class Cli {
                         break;
                     case 'View Employees by Manager':
                         this.viewEmployeesByManager();
+                        break;
+                    case 'View Employees by Department':
+                        this.viewEmployeesByDepartment();
                         break;
                     case 'Delete a Department':
                         this.deleteDepartment();
@@ -545,6 +549,69 @@ class Cli {
     }
 
     // View employees by department:
+    viewEmployeesByDepartment(): void {
+        pool.query(
+            `SELECT id, name FROM department ORDER BY name ASC`,
+            (err, res) => {
+                if (err) {
+                    console.error('Error fetching department data.', err);
+                    this.mainMenu();
+                } else {
+                    const departments = res.rows.map((row) => ({
+                        name: row.name,
+                        value: row.id,
+                    }));
+    
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'departmentId',
+                                message: 'Select a Department to view its employees:',
+                                choices: departments,
+                            },
+                        ])
+                        .then((answers) => {
+                            const { departmentId } = answers;
+    
+                            pool.query(
+                                `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department
+                                 FROM employee e
+                                 JOIN role r ON e.role_id = r.id
+                                 JOIN department d ON r.department_id = d.id
+                                 WHERE d.id = $1
+                                 ORDER BY e.first_name ASC`,
+                                [departmentId],
+                                (err, res) => {
+                                    if (err) {
+                                        console.error('Error fetching employees.', err);
+                                        this.mainMenu();
+                                    } else {
+                                        console.log();
+                                        console.log(`Employees in the ${departments.find(dept => dept.value === departmentId)?.name} Department:`);
+                                        const table = new Table({
+                                            head: ['Employee ID', 'First Name', 'Last Name', 'Job Title', 'Department'],
+                                        });
+                                        res.rows.forEach((row) => {
+                                            table.push([
+                                                row.id,
+                                                row.first_name,
+                                                row.last_name,
+                                                row.title,
+                                                row.department,
+                                            ]);
+                                        });
+                                        console.log(table.toString());
+                                        console.log();
+                                        this.mainMenu();
+                                    }
+                                }
+                            );
+                        });
+                }
+            }
+        );
+    }
 
     // Delete departments, roles, and employees:
     deleteDepartment(): void {
