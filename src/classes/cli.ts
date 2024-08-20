@@ -23,6 +23,7 @@ class Cli {
                         'Add an Employee',
                         'Update an Employee Role',
                         `Update an Employee's Manager`,
+                        'View Employees by Manager',
                         'Delete a Department',
                         'Delete a Role',
                         'Delete an Employee',
@@ -55,6 +56,9 @@ class Cli {
                         break;
                     case `Update an Employee's Manager`:
                         this.updateEmployeeManager();
+                        break;
+                    case 'View Employees by Manager':
+                        this.viewEmployeesByManager();
                         break;
                     case 'Delete a Department':
                         this.deleteDepartment();
@@ -466,6 +470,79 @@ class Cli {
     }
 
     // View employees by manager:
+    viewEmployeesByManager(): void {
+        pool.query(
+            `SELECT e.id, CONCAT(r.title, ' - ', e.first_name, ' ', e.last_name) AS name
+            FROM employee e
+            JOIN role r ON e.role_id = r.id
+            WHERE r.title ILIKE '%Manager%'
+            ORDER BY name ASC`,
+            (err, res) => {
+                if (err) {
+                    console.error('Error fetching manager data.', err);
+                    this.mainMenu();
+                } else {
+                    const managers = res.rows.map((row) => ({
+                        name: row.name,
+                        value: row.id,
+                    }));
+                    managers.unshift({ name: 'No Current Manager', value: null });
+
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'managerId',
+                                message: 'Select a Manager or view employees without a manager:',
+                                choices: managers,
+                            },
+                        ])
+                        .then((answers) => {
+                            const { managerId } = answers;
+
+                            const query = managerId !== null
+                                ? `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department
+                                FROM employee e
+                                JOIN role r ON e.role_id = r.id
+                                JOIN department d ON r.department_id = d.id
+                                WHERE e.manager_id = $1
+                                ORDER BY e.first_name ASC`
+                                : `SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department
+                                FROM employee e
+                                JOIN role r ON e.role_id = r.id
+                                JOIN department d ON r.department_id = d.id
+                                WHERE e.manager_id IS NULL
+                                ORDER BY e.first_name ASC`;
+
+                            pool.query(query, managerId !== null ? [managerId] : [], (err, res) => {
+                                if (err) {
+                                    console.error('Error fetching employees.', err);
+                                    this.mainMenu();
+                                } else {
+                                    console.log();
+                                    console.log(`Employees ${managerId !== null ? 'managed by ' + managers.find(manager => manager.value === managerId)?.name : 'with No Current Manager'}:`);
+                                    const table = new Table({
+                                        head: ['Employee ID', 'First Name', 'Last Name', 'Job Title', 'Department'],
+                                    });
+                                    res.rows.forEach((row) => {
+                                        table.push([
+                                            row.id,
+                                            row.first_name,
+                                            row.last_name,
+                                            row.title,
+                                            row.department,
+                                        ]);
+                                    });
+                                    console.log(table.toString());
+                                    console.log();
+                                    this.mainMenu();
+                                }
+                            });
+                        });
+                }
+            }
+        );
+    }
 
     // View employees by department:
 

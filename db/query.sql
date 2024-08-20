@@ -89,6 +89,33 @@ SET manager_id = $1
 WHERE id = $2
 
 
+---
+-- View employees by manager:
+-- Get Managers by id, concat first_name and last_name, and put in alphabetical order by name:
+SELECT e.id, CONCAT(r.title, ' - ', e.first_name, ' ', e.last_name) AS name
+FROM employee e
+JOIN role r ON e.role_id = r.id
+WHERE r.title ILIKE '%Manager%'
+ORDER BY name ASC
+
+-- Get Employees, their title, their department, and their manager by manager_id, and put in alphabetical order by first_name:
+SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department
+FROM employee e
+JOIN role r ON e.role_id = r.id
+JOIN department d ON r.department_id = d.id
+WHERE e.manager_id = $1
+ORDER BY e.first_name ASC
+
+-- Get Employees with no manager, their title, their department, and put in alphabetical order by first_name:
+SELECT e.id, e.first_name, e.last_name, r.title, d.name AS department
+FROM employee e
+JOIN role r ON e.role_id = r.id
+JOIN department d ON r.department_id = d.id
+WHERE e.manager_id IS NULL
+ORDER BY e.first_name ASC
+
+
+
 --
 --DELETING A DEPARTMENT:
 -- Query to delete a Department by id:
