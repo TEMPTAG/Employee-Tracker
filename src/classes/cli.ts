@@ -28,6 +28,7 @@ class Cli {
                         'Delete a Department',
                         'Delete a Role',
                         'Delete an Employee',
+                        'View Department Budget',
                         'Exit'
                     ],
                 },
@@ -72,6 +73,9 @@ class Cli {
                         break;
                     case 'Delete an Employee':
                         this.deleteEmployee();
+                        break;
+                    case 'View Department Budget':
+                        this.viewDepartmentBudget();
                         break;
                     case 'Exit':
                         console.log('Goodbye!');
@@ -765,6 +769,55 @@ class Cli {
     }
 
     // View the total utilized budget of a department—in other words, the combined salaries of all employees in that department:
+    viewDepartmentBudget(): void {
+        pool.query(
+            `SELECT id, name FROM department ORDER BY name ASC`,
+            (err, res) => {
+                if (err) {
+                    console.error('Error fetching department data.', err);
+                    this.mainMenu();
+                } else {
+                    const departments = res.rows.map((row) => ({
+                        name: row.name,
+                        value: row.id,
+                    }));
+
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                name: 'departmentId',
+                                message: 'Select a Department to view its total utilized budget:',
+                                choices: departments,
+                            },
+                        ])
+                        .then((answers) => {
+                            const { departmentId } = answers;
+
+                            pool.query(
+                                `SELECT SUM(r.salary) AS total_budget
+                                FROM employee e
+                                JOIN role r ON e.role_id = r.id
+                                WHERE r.department_id = $1`,
+                                [departmentId],
+                                (err, res) => {
+                                    if (err) {
+                                        console.error('Error calculating department budget.', err);
+                                        this.mainMenu();
+                                    } else {
+                                        const totalBudget = res.rows[0]?.total_budget || 0;
+                                        console.log();
+                                        console.log(`The total utilized budget for the ${departments.find(dept => dept.value === departmentId)?.name} Department is $${totalBudget}.`);
+                                        console.log();
+                                        this.mainMenu();
+                                    }
+                                }
+                            );
+                        });
+                }
+            }
+        );
+    }
 }
 
 export default Cli;

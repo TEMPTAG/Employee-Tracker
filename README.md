@@ -8,7 +8,7 @@
 
 ## Description
 
-Employee Tracker is a command-line application designed to manage a company’s employee database with ease. This tool is ideal for business owners and managers who need to organize, view, and update their employee information efficiently. The application allows users to view and manage departments, roles, and employees within their organization. Built using Node.js, Inquirer, and PostgreSQL, Employee Tracker provides a user-friendly interface to interact with the database directly from the command line.
+The Employee Management System is a command-line application that allows users to manage a company's employee database. This application is built using Node.js, Inquirer, and PostgreSQL. It provides an intuitive interface for performing various operations such as viewing, adding, updating, and deleting departments, roles, and employees, as well as viewing the total utilized budget for each department.
 
 ![Screenshot of Application Sample](/assets/images/applicationScreenshot.jpg)
 [You can see the application in action HERE](https://drive.google.com/file/d/1a19cl-l-veJVHmVXyiqAyD7t0UCAxsue/view)
@@ -31,6 +31,10 @@ Employee Tracker is a command-line application designed to manage a company’s 
 - **View Departments, Roles, and Employees**: Display detailed information about the company’s departments, roles, and employees.
 - **Add Departments, Roles, and Employees**: Dynamically add new departments, roles, and employees to the database.
 - **Update Employee Roles and Managers**: Update the role or manager of an existing employee.
+- **View Employees by Manager**: See all employees managed by a selected manager or view those without a current manager.
+- **View Employees by Department**: View all employees working in a selected department.
+- **Delete Departments, Roles, and Employee**: Remove entries from the database with confirmation to prevent accidental deletions.
+- **View Department Budget**: Calculate and display the total utilized budget of a department by summing up all employees’ salaries in that department.
 
 ---
 
@@ -82,10 +86,9 @@ npm install
 - Create a .env file in the root directory and add your database connection details:
 
 ```bash
-DB_HOST=your_database_host
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
-DB_DATABASE=your_database_name
+DB_NAME=your_database_name
 ```
 
 ---
@@ -110,6 +113,12 @@ npm start
   Add an Employee
   Update an Employee Role
   Update an Employee's Manager
+  View Employees by Manager
+  View Employees by Department
+  Delete a Department
+  Delete a Role
+  Delete an Employee
+  View Department Budget
   Exit
 ```
 

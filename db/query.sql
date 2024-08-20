@@ -140,3 +140,16 @@ DELETE FROM role WHERE id = $1;
 -- DELETING AN EMPLOYEE:
 -- Query to delete an Employee by id:
 DELETE FROM employee WHERE id = $1;
+
+
+---
+-- View the total utilized budget of a department:
+-- Get Departments by id, and put in alphabetical order by name:
+SELECT id, name FROM department
+ORDER BY name ASC
+
+-- Get the total salary of all employees in a department:
+SELECT SUM(r.salary) AS total_budget
+FROM employee e
+JOIN role r ON e.role_id = r.id
+WHERE r.department_id = $1
